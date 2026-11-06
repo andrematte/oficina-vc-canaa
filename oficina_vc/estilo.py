@@ -19,15 +19,32 @@ VERMELHO = "#C8101A"
 VERDE = "#1FBF4F"
 
 # Cores fixas por classe nas caixas de detecção -----------------------------
-# Chave: nome da classe em minúsculas, sem acento. Valor: (cor da caixa, cor do texto da etiqueta).
-# As classes do Modelo pré-treinado ficam todas em amarelo; as quatro cores de
-# CORES_RESERVA são as dos Tipos de veículo do Modelo especialista.
-CORES_CLASSES = {
-    nome: (AMARELO, NAVY)
-    for nome in ("car", "carro", "motorcycle", "moto", "bus", "onibus", "truck", "caminhao", "person", "pessoa")
+# Chave: nome cru da classe no modelo (o de `modelo.names`), em minúsculas e sem acento.
+# Valor: (cor da caixa, cor do texto da etiqueta).
+#
+# - Modelo pré-treinado (COCO, nomes em inglês): tudo em amarelo.
+# - Modelo especialista de Tipos de veículo (nomes em português): uma cor por classe;
+#   o Ônibus, que entrou depois da paleta, fica em off-white (o azul do deck se confundia
+#   com o azul-claro da Van e sumia no fundo navy do painel).
+#   O Carro fica no amarelo do pré-treinado, que marcava quase tudo como car; os
+#   outros três são os que o pré-treinado não separava.
+#
+# As chaves não se cruzam: o pré-treinado diz "car"/"truck", o especialista diz
+# "carro"/"caminhão". Por isso a cor é sempre buscada pelo nome cru, nunca pelo nome
+# traduzido de `nome_pt` (senão o "caminhão" do pré-treinado ficaria vermelho).
+CORES_PRE_TREINADO = {
+    nome: (AMARELO, NAVY) for nome in ("car", "motorcycle", "bus", "truck", "person", "bicycle")
 }
+CORES_TIPOS_DE_VEICULO = {
+    "carro": (AMARELO, NAVY),
+    "pickup": (VERDE, NAVY),
+    "van": ("#5B70F4", OFF_WHITE),
+    "caminhao": ("#F01414", OFF_WHITE),
+    "onibus": (OFF_WHITE, NAVY),  # 5ª classe, fora das quatro cores de classe do deck
+}
+CORES_CLASSES = {**CORES_PRE_TREINADO, **CORES_TIPOS_DE_VEICULO}
 # Para classes fora da tabela, em ordem.
-CORES_RESERVA = [(AMARELO, NAVY), ("#1FBF4F", NAVY), ("#5B70F4", OFF_WHITE), ("#F01414", OFF_WHITE)]
+CORES_RESERVA = list(CORES_TIPOS_DE_VEICULO.values())
 
 COR_ZONA = AZUL
 ALFA_ZONA = 0.22  # preenchimento translúcido das Zonas
@@ -56,7 +73,7 @@ def nome_pt(nome):
 
 
 def cores_da_classe(nome, indice=0):
-    """(cor da caixa, cor do texto) em hex para uma classe."""
+    """(cor da caixa, cor do texto) em hex para uma classe, pelo nome cru do modelo."""
     chave = _sem_acento(nome)
     if chave in CORES_CLASSES:
         return CORES_CLASSES[chave]

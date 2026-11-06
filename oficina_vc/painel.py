@@ -58,15 +58,20 @@ class Painel:
 
     - `aproximacoes`: nomes das Zonas, na ordem das linhas e colunas da Matriz;
     - `classes`: nomes (em português) das classes contadas;
+    - `cores`: cor (hex) de cada classe; `processar_video` passa as cores buscadas pelo nome cru
+      do modelo, as mesmas das caixas;
     - `duracao` em segundos; `fps` é o do vídeo de saída (com `passo=2`, metade do original).
     """
 
-    def __init__(self, duracao, aproximacoes, classes, credito=None, fps=25):
+    def __init__(self, duracao, aproximacoes, classes, credito=None, fps=25, cores=None):
         self.duracao = max(duracao, 1e-6)
         self.fps = fps
         self.pulso_quadros = max(round(PULSO_SEGUNDOS * fps), 1)
         self.aproximacoes = list(aproximacoes)[:4]
-        self.classes = list(classes)[:4]
+        self.classes = list(classes)[:5]  # o especialista tem 5 Tipos de veículo
+        self.passo_classe = 32 if len(self.classes) <= 4 else 28  # 5 linhas cabem antes do crédito
+        # Cor de cada classe, em hex; o padrão busca pelo nome, que aqui já vem em português.
+        self.cores = list(cores) if cores else [estilo.cores_da_classe(n, k)[0] for k, n in enumerate(self.classes)]
         self.credito = credito
         self.fontes = {
             "titulo": estilo.fonte(30, negrito=True),
@@ -124,9 +129,8 @@ class Painel:
             traco.ellipse((MARGEM, yk + 7, MARGEM + 12, yk + 19), fill=CORES_TIPOS[tipo])
             traco.text((MARGEM + 22, yk), tipo, font=f["pequeno"], fill=BRANCO)
         for k, nome in enumerate(self.classes):
-            yk = y + 36 + k * 32
-            cor, _ = estilo.cores_da_classe(nome, k)
-            traco.ellipse((LARGURA // 2 + 10, yk + 7, LARGURA // 2 + 22, yk + 19), fill=estilo.hex_para_rgb(cor))
+            yk = y + 36 + k * self.passo_classe
+            traco.ellipse((LARGURA // 2 + 10, yk + 7, LARGURA // 2 + 22, yk + 19), fill=estilo.hex_para_rgb(self.cores[k]))
             traco.text((LARGURA // 2 + 32, yk), nome.capitalize(), font=f["pequeno"], fill=BRANCO)
         if self.credito:
             traco.text((MARGEM, ALTURA - 30), self.credito, font=f["credito"], fill=LEGENDA)
@@ -189,7 +193,7 @@ class Painel:
         for k, tipo in enumerate(TIPOS):
             self._valor(traco, LARGURA // 2 - 24, y + 36 + k * 32, por_tipo.get(tipo, 0))
         for k, nome in enumerate(self.classes):
-            self._valor(traco, LARGURA - MARGEM, y + 36 + k * 32, por_classe.get(nome, 0))
+            self._valor(traco, LARGURA - MARGEM, y + 36 + k * self.passo_classe, por_classe.get(nome, 0))
 
         return np.asarray(imagem)[..., ::-1].copy()
 

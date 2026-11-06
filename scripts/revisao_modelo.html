@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Revisão dos Tipos de veículo</title>
+<style>
+  :root { --navy: #14193D; --fundo: #FCFCFA; --cinza: #5A6080; --linha: #E3E4EA; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fundo); color: var(--navy); font: 14px/1.4 Raleway, "Helvetica Neue", Arial, sans-serif; }
+  header { position: sticky; top: 0; z-index: 5; background: var(--navy); color: #fff; padding: 12px 20px; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; }
+  header h1 { font-size: 18px; margin: 0; font-weight: 700; }
+  .placar { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; }
+  .placar span b { font-variant-numeric: tabular-nums; }
+  .chip { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; box-shadow: 0 0 0 1px rgba(20,25,61,.35); }
+  header button { margin-left: auto; background: #FFD000; color: var(--navy); border: 0; border-radius: 6px; padding: 8px 14px; font: inherit; font-weight: 700; cursor: pointer; }
+  header .mudancas { font-size: 13px; opacity: .85; }
+  main { padding: 16px 20px 80px; }
+  .ajuda { color: var(--cinza); margin: 0 0 12px; max-width: 70em; }
+  .ajuda kbd { border: 1px solid var(--linha); border-radius: 3px; padding: 0 4px; background: #fff; font-size: 12px; }
+  nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+  nav a { color: var(--navy); text-decoration: none; border: 1px solid var(--linha); border-radius: 14px; padding: 3px 10px; background: #fff; }
+  h2 { font-size: 16px; margin: 26px 0 4px; display: flex; align-items: center; gap: 8px; }
+  h2 small { font-weight: 400; color: var(--cinza); }
+  .nota { color: var(--cinza); margin: 0 0 8px; font-size: 13px; }
+  .grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .item { background: #fff; border: 4px solid var(--cor); border-radius: 8px; padding: 6px; position: relative; }
+  .item.mudou::after { content: "corrigido"; position: absolute; top: 8px; right: 8px; padding: 1px 6px; border-radius: 8px; background: var(--navy); color: #fff; font-size: 11px; font-weight: 700; }
+  .item .img { height: 230px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #F4F5F7; border-radius: 4px; }
+  .item img { width: 100%; height: 100%; object-fit: contain; }
+  .botoes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 6px; }
+  .botoes button { border: 0; border-radius: 4px; padding: 6px 0; font: 700 13px/1.2 inherit; background: #F0F1F4; color: var(--cinza); cursor: pointer; }
+  .botoes button:hover { outline: 2px solid var(--b); }
+  .botoes button.sim { background: var(--b); color: var(--t); }
+  .info { font-size: 12px; color: var(--cinza); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  dialog { border: 0; border-radius: 8px; max-width: 640px; width: 90%; }
+  dialog textarea { width: 100%; height: 240px; font: 12px ui-monospace, monospace; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Revisão dos Tipos de veículo</h1>
+  <div class="placar" id="placar"></div>
+  <span class="mudancas" id="mudancas"></span>
+  <button id="exportar">Exportar __ARQUIVO__</button>
+</header>
+<main>
+  <p class="ajuda">
+    Cada recorte veio do Moondream 3 com uma classe. Corrija só o que estiver errado: clique na classe certa, ou passe o mouse
+    no recorte e tecle <kbd>c</kbd> carro (inclui SUV e minivan), <kbd>p</kbd> pickup, <kbd>v</kbd> van,
+    <kbd>k</kbd> caminhão, <kbd>o</kbd> ônibus (inclui micro-ônibus), <kbd>x</kbd> descartar (não é um veículo inteiro:
+    pedaço, sombra, grupo de carros). O progresso fica salvo neste navegador. No fim, exporte o CSV para a pasta
+    <code>tipos-de-veiculo/</code>. A etiqueta "corrigido" marca o que você mudou.
+  </p>
+  <nav id="indice"></nav>
+  <div id="secoes"></div>
+</main>
+<dialog id="dialogo">
+  <p>Se o download não começou, copie o texto abaixo para <code>__ARQUIVO__</code>:</p>
+  <textarea id="csv" readonly></textarea>
+  <p><button onclick="this.closest('dialog').close()">Fechar</button></p>
+</dialog>
+<script>
+const ITENS = __ITENS__;
+const CORES = __CORES__;
+const ORDEM = ["pickup", "van", "caminhão", "ônibus", "?", "x", "carro"];
+const TECLAS = { c: "carro", p: "pickup", v: "van", k: "caminhão", o: "ônibus", x: "x" };
+const LETRA = { carro: "C", pickup: "P", van: "V", "caminhão": "K", "ônibus": "O", x: "X" };
+const NOMES = { carro: "Carro", pickup: "Pickup", van: "Van", "caminhão": "Caminhão", "ônibus": "Ônibus", x: "Descartar", "?": "Sem resposta" };
+const TECLA_DE = Object.fromEntries(Object.entries(TECLAS).map(([t, c]) => [c, t]));
+const TEXTO_CLARO = new Set(["van", "caminhão", "x", "?"]);
+const CHAVE = "revisao-tipos-de-veiculo-__ARQUIVO__";
+
+let salvo = {};
+try { salvo = JSON.parse(localStorage.getItem(CHAVE) || "{}"); } catch (e) { salvo = {}; }
+const atual = id => salvo[id] || ITENS_POR_ID[id].c;
+const ITENS_POR_ID = Object.fromEntries(ITENS.map(i => [i.id, i]));
+
+function guardar() { try { localStorage.setItem(CHAVE, JSON.stringify(salvo)); } catch (e) {} }
+
+function placar() {
+  const n = {};
+  for (const i of ITENS) n[atual(i.id)] = (n[atual(i.id)] || 0) + 1;
+  document.getElementById("placar").innerHTML = ["carro", "pickup", "van", "caminhão", "ônibus", "x"].map(c =>
+    `<span><i class="chip" style="background:${CORES[c]}"></i>${NOMES[c]} <b>${n[c] || 0}</b></span>`).join("");
+  const m = Object.keys(salvo).filter(id => salvo[id] !== ITENS_POR_ID[id].c).length;
+  document.getElementById("mudancas").textContent = m ? `${m} correções` : "";
+}
+
+function pintar(el, id) {
+  const c = atual(id);
+  el.style.setProperty("--cor", CORES[c] || "#999");
+  el.classList.toggle("mudou", c !== ITENS_POR_ID[id].c);
+  for (const b of el.querySelectorAll(".botoes button")) {
+    const sim = b.dataset.c === c;
+    b.classList.toggle("sim", sim);
+    b.style.setProperty("--b", CORES[b.dataset.c]);
+    b.style.setProperty("--t", TEXTO_CLARO.has(b.dataset.c) ? "#fff" : "#14193D");
+  }
+}
+
+function mudar(el, id, c) {
+  if (c === ITENS_POR_ID[id].c) delete salvo[id]; else salvo[id] = c;
+  guardar(); pintar(el, id); placar();
+}
+
+function montar() {
+  const secoes = document.getElementById("secoes");
+  const indice = document.getElementById("indice");
+  for (const classe of ORDEM) {
+    let lista = ITENS.filter(i => i.c === classe);
+    if (!lista.length) continue;
+    lista.sort((a, b) => b.lado - a.lado);
+    indice.insertAdjacentHTML("beforeend", `<a href="#s-${classe}"><i class="chip" style="background:${CORES[classe]}"></i>${NOMES[classe]} (${lista.length})</a>`);
+    const sec = document.createElement("section");
+    sec.id = `s-${classe}`;
+    sec.innerHTML = `<h2><i class="chip" style="background:${CORES[classe]}"></i>${NOMES[classe]} <small>${lista.length} recortes, do maior para o menor (classe do Moondream 3)</small></h2>` +
+      (classe === "carro" ? `<p class="nota">A grande maioria está certa: procure Pickups, Vans, Caminhões e Ônibus escondidos. Abaixo de ~32 px nem o olho separa Pickup de Carro: pode parar quando os recortes ficarem minúsculos.</p>` : "") +
+      (classe === "x" ? `<p class="nota">Caixas ruins do pré-treinado, descartadas à vista antes (carro com a sombra, grupo de carros, pedaço de um veículo grande). Devolva a classe se alguma for um veículo inteiro.</p>` : "");
+    const grade = document.createElement("div");
+    grade.className = "grade";
+    for (const i of lista) {
+      const el = document.createElement("div");
+      el.className = "item";
+      el.innerHTML = `<div class="img"><img loading="lazy" src="recortes/${i.id}.png" alt=""></div>` +
+        `<div class="botoes">${Object.keys(LETRA).map(c => `<button data-c="${c}" title="tecla ${TECLA_DE[c]}">${NOMES[c]}</button>`).join("")}</div>` +
+        `<div class="info" title="${i.id}\nMoondream 3: ${i.md}\npré-treinado: ${i.coco}">${i.lado} px na imagem · Moondream: ${i.md}</div>`;
+      el.addEventListener("click", e => { const c = e.target.dataset && e.target.dataset.c; if (c) mudar(el, i.id, c); });
+      el.addEventListener("mouseenter", () => { sobre = [el, i.id]; });
+      el.addEventListener("mouseleave", () => { sobre = null; });
+      pintar(el, i.id);
+      grade.appendChild(el);
+    }
+    sec.appendChild(grade);
+    secoes.appendChild(sec);
+  }
+}
+
+let sobre = null;
+document.addEventListener("keydown", e => {
+  if (!sobre || e.metaKey || e.ctrlKey || e.altKey) return;
+  const c = TECLAS[e.key.toLowerCase()];
+  if (c) { mudar(sobre[0], sobre[1], c); e.preventDefault(); }
+});
+
+document.getElementById("exportar").addEventListener("click", () => {
+  const linhas = ["caixa,classe", ...ITENS.map(i => `${i.id},${atual(i.id)}`)];
+  const texto = linhas.join("\n") + "\n";
+  document.getElementById("csv").value = texto;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([texto], { type: "text/csv" }));
+  a.download = "__ARQUIVO__";
+  document.body.appendChild(a); a.click(); a.remove();
+  document.getElementById("dialogo").showModal();
+});
+
+montar();
+placar();
+</script>
+</body>
+</html>

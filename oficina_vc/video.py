@@ -217,7 +217,12 @@ def processar_video(
     camada = desenho.camada_zonas((altura, largura), zonas)
     credito = next((c for chave, c in CREDITOS.items() if chave in video.name.lower()), None)
     painel = Painel(
-        duracao=total / fps_video, aproximacoes=list(zonas), classes=nomes_contados, credito=credito, fps=fps
+        duracao=total / fps_video,
+        aproximacoes=list(zonas),
+        classes=nomes_contados,
+        cores=[estilo.cores_da_classe(nomes[i], i)[0] for i in ids_contados],  # pelo nome cru, como as caixas
+        credito=credito,
+        fps=fps,
     )
 
     saida = Path(saida) if saida else PASTA_SAIDAS / f"{video.stem}_saida.mp4"

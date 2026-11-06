@@ -25,6 +25,8 @@ ARQUIVOS = {
     # Gerados por scripts/gerar_resultado_pronto.py
     "case_resultado_pronto.mp4": Arquivo("", 5_598_054, "Resultado pronto (vídeo)"),
     "case_metricas.json": Arquivo("", 11_858, "Resultado pronto (métricas)"),
+    # Gerado por scripts/dataset_tipos_de_veiculo.py exportar
+    "dataset_tipos_de_veiculo.zip": Arquivo("", 147_757_846, "dataset de Tipos de veículo (YOLO)"),
 }
 
 # O que cada notebook baixa no bootstrap.
@@ -39,6 +41,7 @@ CONJUNTOS = {
     "fine_tuning": [
         "bellevue-ne8th_2762-2802s.mp4",
         "yolo26n.pt",
+        "dataset_tipos_de_veiculo.zip",
     ],
 }
 

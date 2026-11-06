@@ -15,7 +15,7 @@ Instituto Sustentabilidade da Amazônia com Ciência e Inovação (iSACI)
 |---|---|
 | **Slides da Oficina (PDF)** | [baixar o PDF](LINK_DO_PDF) |
 | **1. Case de tráfego**<br>Detectar, rastrear e contar os movimentos dos veículos num cruzamento | [![Abrir no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/andrematte/oficina-vc-canaa/blob/v2026.11.11/1_case_trafego.ipynb) |
-| **2. Fine-tuning de Tipos de veículo**<br>Ensinar o modelo a separar Carro, Pickup, Van e Caminhão | [![Abrir no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/andrematte/oficina-vc-canaa/blob/v2026.11.11/2_fine_tuning_tipos_de_veiculo.ipynb) |
+| **2. Fine-tuning de Tipos de veículo**<br>Ensinar o modelo a separar Carro, Pickup, Van, Caminhão e Ônibus | [![Abrir no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/andrematte/oficina-vc-canaa/blob/v2026.11.11/2_fine_tuning_tipos_de_veiculo.ipynb) |
 
 ## Como usar no Colab
 
