@@ -1,0 +1,8 @@
+# Versões fixadas da Stack do Colab (as mesmas de oficina_vc/ambiente.py).
+# No Colab, o bootstrap instala só estas; torch, opencv, numpy, matplotlib e Pillow já vêm no runtime.
+ultralytics==8.4.201
+supervision==0.31.4
+trackers==2.6.1
+gdown==6.5.1
+# Modo local (fora do Colab): Jupyter para abrir os notebooks
+jupyterlab
