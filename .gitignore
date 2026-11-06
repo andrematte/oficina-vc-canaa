@@ -7,4 +7,5 @@ __pycache__/
 # Arquivos baixados do Drive e vídeos gerados
 /dados
 /saidas
+
 *.parcial

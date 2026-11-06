@@ -6,3 +6,4 @@ trackers==2.6.1
 gdown==6.5.1
 # Modo local (fora do Colab): Jupyter para abrir os notebooks
 jupyterlab
+ipywidgets  # barra de progresso do processamento no Jupyter

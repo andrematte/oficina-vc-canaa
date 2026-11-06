@@ -14,8 +14,8 @@ Instituto Sustentabilidade da Amazônia com Ciência e Inovação (iSACI)
 | | |
 |---|---|
 | **Slides da Oficina (PDF)** | [baixar o PDF](LINK_DO_PDF) |
-| **1. Case de monitoramento urbano**<br>Detectar, rastrear e contar pessoas num vídeo de câmera fixa | [![Abrir no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/andrematte/oficina-vc-canaa/blob/v2026.11.11/1_case_monitoramento_urbano.ipynb) |
-| **2. Fine-tuning de Pedestres vulneráveis**<br>Ensinar o modelo a reconhecer Criança, Idoso e Pessoa com deficiência | [![Abrir no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/andrematte/oficina-vc-canaa/blob/v2026.11.11/2_fine_tuning_pedestres_vulneraveis.ipynb) |
+| **1. Case de tráfego**<br>Detectar, rastrear e contar os movimentos dos veículos num cruzamento | [![Abrir no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/andrematte/oficina-vc-canaa/blob/v2026.11.11/1_case_trafego.ipynb) |
+| **2. Fine-tuning de Tipos de veículo**<br>Ensinar o modelo a separar Carro, Pickup, Van e Caminhão | [![Abrir no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/andrematte/oficina-vc-canaa/blob/v2026.11.11/2_fine_tuning_tipos_de_veiculo.ipynb) |
 
 ## Como usar no Colab
 
@@ -43,8 +43,8 @@ Fora do Colab, a célula de preparação não clona nem instala nada: ela só ba
 ## O que tem aqui
 
 ```
-1_case_monitoramento_urbano.ipynb      notebook do Case
-2_fine_tuning_pedestres_vulneraveis.ipynb
+1_case_trafego.ipynb                   notebook do Case
+2_fine_tuning_tipos_de_veiculo.ipynb   notebook do fine-tuning
 oficina_vc/        biblioteca local: laço de vídeo, painel de métricas, desenhos, downloads
 scripts/           como os arquivos da Oficina foram preparados (vídeo, Cena-âncora, resultados)
 requirements.txt   versões fixadas
@@ -57,6 +57,6 @@ Vídeos e modelos não ficam no repositório: a célula de preparação os baixa
 ## Licenças
 
 - **Código**: [GNU AGPL-3.0](LICENSE). Os notebooks usam o [Ultralytics YOLO](https://github.com/ultralytics/ultralytics), também AGPL-3.0. **Uso comercial** do Ultralytics, inclusive de modelos treinados com ele, exige a [licença Enterprise da Ultralytics](https://www.ultralytics.com/license). Este aviso não é parecer jurídico.
-- **Vídeo e imagens do Case**: sequência MOT20-02 do [MOTChallenge](https://motchallenge.net/data/MOT20/), sob CC BY-NC-SA 3.0. Detalhes e crédito em [LICENCA-VIDEO.md](LICENCA-VIDEO.md).
+- **Vídeo e imagens do Case**: cruzamento Bellevue Way × NE 8th, do [Bellevue Traffic Video Dataset](https://github.com/City-of-Bellevue/TrafficVideoDataset) da City of Bellevue, sem licença formal, usado para ensino e pesquisa. Detalhes e crédito em [LICENCA-VIDEO.md](LICENCA-VIDEO.md).
 - **Fonte Raleway** (em `oficina_vc/fontes/`): SIL Open Font License 1.1, em [OFL.txt](oficina_vc/fontes/OFL.txt).
 - **Slides**: © André Mattos / iSACI, CC BY-NC-SA 4.0, exceto onde indicado.

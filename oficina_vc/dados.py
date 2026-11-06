@@ -19,9 +19,10 @@ class Arquivo:
 
 # Os IDs são preenchidos em "Transferir as pastas para o Drive do iSACI".
 ARQUIVOS = {
-    "mot20-02_65-105s.mp4": Arquivo("", 49_971_088, "vídeo"),
-    "cena_ancora_2301.png": Arquivo("", 1_794_860, "Cena-âncora"),
+    "bellevue-ne8th_2762-2802s.mp4": Arquivo("", 14_264_302, "vídeo"),
+    "cena_ancora_bellevue_623.png": Arquivo("", 1_242_855, "Cena-âncora"),
     "yolo26n.pt": Arquivo("", 5_544_453, "modelo"),
+    # Gerados no "Notebook do Case de tráfego e Resultado pronto"; o tamanho entra depois.
     "case_resultado_pronto.mp4": Arquivo("", None, "Resultado pronto (vídeo)"),
     "case_metricas.json": Arquivo("", None, "Resultado pronto (métricas)"),
 }
@@ -29,14 +30,14 @@ ARQUIVOS = {
 # O que cada notebook baixa no bootstrap.
 CONJUNTOS = {
     "case": [
-        "mot20-02_65-105s.mp4",
-        "cena_ancora_2301.png",
+        "bellevue-ne8th_2762-2802s.mp4",
+        "cena_ancora_bellevue_623.png",
         "yolo26n.pt",
         "case_resultado_pronto.mp4",
         "case_metricas.json",
     ],
     "fine_tuning": [
-        "mot20-02_65-105s.mp4",
+        "bellevue-ne8th_2762-2802s.mp4",
         "yolo26n.pt",
     ],
 }
