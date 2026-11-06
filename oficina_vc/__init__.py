@@ -1,8 +1,8 @@
 """Biblioteca local da Oficina "Visão Computacional Aplicada à Cidade" (Canaã dos Carajás, 11/11/2026).
 
-Guarda o que não cabe explicar numa oficina curta: o laço de vídeo, o painel de
-métricas, os desenhos, os downloads e a preparação do ambiente. O código que
-ilustra a teoria fica visível nos notebooks.
+Guarda o que não cabe explicar numa oficina curta: o laço de vídeo, a contagem
+dos Movimentos, o painel de métricas, os desenhos, os downloads e a preparação
+do ambiente. O código que ilustra a teoria fica visível nos notebooks.
 
 As importações são preguiçosas: `from oficina_vc import preparar` funciona antes
 de os pacotes (ultralytics, supervision, trackers) estarem instalados.
@@ -22,9 +22,11 @@ _ONDE = {
     "mostrar": "desenho",
     "mostrar_video": "desenho",
     "desenhar_caixas": "desenho",
-    "desenhar_linha": "desenho",
-    "desenhar_zona": "desenho",
-    "desenhar_linha_e_zona": "desenho",
+    "desenhar_zonas": "desenho",
+    "criar_zonas": "case",
+    "criar_rastreador": "case",
+    "ContadorDeMovimentos": "movimentos",
+    "tipo_de_movimento": "movimentos",
     "processar_video": "video",
     "resultado_pronto": "video",
     "ResultadoCase": "video",

@@ -22,9 +22,9 @@ ARQUIVOS = {
     "bellevue-ne8th_2762-2802s.mp4": Arquivo("", 14_264_302, "vídeo"),
     "cena_ancora_bellevue_623.png": Arquivo("", 1_242_855, "Cena-âncora"),
     "yolo26n.pt": Arquivo("", 5_544_453, "modelo"),
-    # Gerados no "Notebook do Case de tráfego e Resultado pronto"; o tamanho entra depois.
-    "case_resultado_pronto.mp4": Arquivo("", None, "Resultado pronto (vídeo)"),
-    "case_metricas.json": Arquivo("", None, "Resultado pronto (métricas)"),
+    # Gerados por scripts/gerar_resultado_pronto.py
+    "case_resultado_pronto.mp4": Arquivo("", 5_598_054, "Resultado pronto (vídeo)"),
+    "case_metricas.json": Arquivo("", 11_858, "Resultado pronto (métricas)"),
 }
 
 # O que cada notebook baixa no bootstrap.

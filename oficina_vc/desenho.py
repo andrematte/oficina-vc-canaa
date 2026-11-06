@@ -1,4 +1,4 @@
-"""Desenho sobre os quadros (caixas, Linha virtual, Zona, Rastros) e exibição no notebook."""
+"""Desenho sobre os quadros (caixas, Zonas por Aproximação) e exibição no notebook."""
 
 import base64
 from pathlib import Path
@@ -21,7 +21,7 @@ def nomes_das_classes(origem):
     nomes = getattr(origem, "names", None)
     if nomes is None and isinstance(origem, (list, tuple)) and origem:
         nomes = getattr(origem[0], "names", None)
-    return dict(nomes) if nomes else {0: "pessoa"}
+    return dict(nomes) if nomes else {}
 
 
 def paletas(nomes):
@@ -49,7 +49,7 @@ def desenhar_caixas(imagem, deteccoes, nomes=None, rotulos=None):
     """Devolve uma cópia de `imagem` (BGR) com as caixas e etiquetas na cor de cada classe.
 
     `deteccoes` pode ser o resultado de `modelo(quadro, ...)` ou um `sv.Detections`.
-    Sem `rotulos`, cada etiqueta mostra a classe e a confiança (ex.: "pessoa 0,87").
+    Sem `rotulos`, cada etiqueta mostra a classe e a confiança (ex.: "carro 0,87").
     """
     if nomes is None:
         nomes = nomes_das_classes(deteccoes)
@@ -72,12 +72,7 @@ def desenhar_caixas(imagem, deteccoes, nomes=None, rotulos=None):
     return rotulador.annotate(saida, det, labels=rotulos)
 
 
-# Linha virtual e Zona ------------------------------------------------------
-def _pontos_da_linha(linha):
-    inicio, fim = linha.vector.start, linha.vector.end
-    return (int(inicio.x), int(inicio.y)), (int(fim.x), int(fim.y))
-
-
+# Zonas por Aproximação -------------------------------------------------------
 def _etiqueta(texto, tamanho=26):
     """Etiqueta azul com texto off-white (RGBA)."""
     fonte = estilo.fonte(tamanho, negrito=True)
@@ -91,36 +86,50 @@ def _etiqueta(texto, tamanho=26):
     return imagem
 
 
-def camada_linha_e_zona(forma, linha=None, zona=None):
-    """Pré-desenha Linha virtual e Zona numa camada (cor BGR + alfa 0–1) do tamanho do quadro.
+def _vertices(zona):
+    """Vértices de um sv.PolygonZone ou de uma lista de pontos (x, y)."""
+    return [tuple(map(int, p)) for p in getattr(zona, "polygon", zona)]
 
-    É desenhada uma vez só e aplicada em cada quadro do vídeo com `aplicar_camada`.
+
+def _lugar_da_etiqueta(poligono, tamanho, quadro):
+    """Canto superior esquerdo da etiqueta de uma Zona.
+
+    Na metade de cima do quadro, a etiqueta fica logo acima da Zona (sobre a calçada,
+    onde não passa veículo e as caixas não a cobrem); na de baixo, no centro da Zona.
+    """
+    (w, h), (largura, altura) = tamanho, quadro
+    topo = min(p[1] for p in poligono)
+    if topo < altura / 2 and topo - h - 6 >= 0:
+        de_cima = [p[0] for p in poligono if p[1] <= topo + 40]
+        x, y = sum(de_cima) / len(de_cima) - w / 2, topo - h - 6
+    else:
+        x = sum(p[0] for p in poligono) / len(poligono) - w / 2
+        y = sum(p[1] for p in poligono) / len(poligono) - h / 2
+    return int(min(max(x, 0), largura - w)), int(min(max(y, 0), altura - h))
+
+
+def camada_zonas(forma, zonas):
+    """Pré-desenha as Zonas numa camada (cor BGR + alfa 0–1) do tamanho do quadro.
+
+    `zonas` é {nome: sv.PolygonZone ou lista de pontos}. A camada é desenhada uma
+    vez só e aplicada em cada quadro do vídeo com `aplicar_camada`.
     """
     altura, largura = forma[:2]
     camada = Image.new("RGBA", (largura, altura), (0, 0, 0, 0))
-    azul = estilo.hex_para_rgb(estilo.COR_LINHA_ZONA)
+    azul = estilo.hex_para_rgb(estilo.COR_ZONA)
+    poligonos = {nome: _vertices(zona) for nome, zona in (zonas or {}).items()}
 
-    if zona is not None:
-        poligono = [tuple(map(int, p)) for p in zona.polygon]
-        preenchimento = Image.new("RGBA", (largura, altura), (0, 0, 0, 0))
+    preenchimento = Image.new("RGBA", (largura, altura), (0, 0, 0, 0))
+    for poligono in poligonos.values():
         ImageDraw.Draw(preenchimento).polygon(poligono, fill=azul + (int(255 * estilo.ALFA_ZONA),))
-        camada = Image.alpha_composite(camada, preenchimento)
-        ImageDraw.Draw(camada).line(poligono + [poligono[0]], fill=azul + (230,), width=4, joint="curve")
-        etiqueta = _etiqueta("Zona")
-        x = min(p[0] for p in poligono)
-        y = min(p[1] for p in poligono) - etiqueta.height - 8
-        camada.alpha_composite(etiqueta, (max(x, 0), max(y, 0)))
-
-    if linha is not None:
-        inicio, fim = _pontos_da_linha(linha)
-        traco = ImageDraw.Draw(camada)
-        traco.line([inicio, fim], fill=azul + (int(255 * estilo.ALFA_LINHA),), width=8)
-        for ponto in (inicio, fim):
-            traco.ellipse((ponto[0] - 9, ponto[1] - 9, ponto[0] + 9, ponto[1] + 9), fill=azul + (255,))
-        etiqueta = _etiqueta("Linha virtual")
-        x = min(max(min(inicio[0], fim[0]), 0), largura - etiqueta.width)
-        y = min(inicio[1], fim[1]) - etiqueta.height - 14
-        camada.alpha_composite(etiqueta, (x, max(y, 0)))
+    camada = Image.alpha_composite(camada, preenchimento)
+    traco = ImageDraw.Draw(camada)
+    for poligono in poligonos.values():
+        traco.line(poligono + [poligono[0]], fill=azul + (230,), width=4, joint="curve")
+    for nome, poligono in poligonos.items():
+        etiqueta = _etiqueta(nome)
+        x, y = _lugar_da_etiqueta(poligono, etiqueta.size, (largura, altura))
+        camada.alpha_composite(etiqueta, (x, y))
 
     rgba = np.asarray(camada)
     cor = cv2.cvtColor(rgba[..., :3], cv2.COLOR_RGB2BGR).astype(np.float32)
@@ -131,7 +140,7 @@ def camada_linha_e_zona(forma, linha=None, zona=None):
 
 
 def aplicar_camada(imagem, camada):
-    """Aplica uma camada de `camada_linha_e_zona` sobre a imagem (no lugar) e a devolve."""
+    """Aplica uma camada de `camada_zonas` sobre a imagem (no lugar) e a devolve."""
     cor, alfa, caixa = camada
     if caixa is None:
         return imagem
@@ -142,19 +151,9 @@ def aplicar_camada(imagem, camada):
     return imagem
 
 
-def desenhar_linha(imagem, linha):
-    """Cópia de `imagem` com a Linha virtual (um sv.LineZone)."""
-    return aplicar_camada(imagem.copy(), camada_linha_e_zona(imagem.shape, linha=linha))
-
-
-def desenhar_zona(imagem, zona):
-    """Cópia de `imagem` com a Zona (um sv.PolygonZone)."""
-    return aplicar_camada(imagem.copy(), camada_linha_e_zona(imagem.shape, zona=zona))
-
-
-def desenhar_linha_e_zona(imagem, linha, zona):
-    """Cópia de `imagem` com a Linha virtual e a Zona."""
-    return aplicar_camada(imagem.copy(), camada_linha_e_zona(imagem.shape, linha, zona))
+def desenhar_zonas(imagem, zonas):
+    """Cópia de `imagem` com as Zonas por Aproximação ({nome: sv.PolygonZone ou pontos})."""
+    return aplicar_camada(imagem.copy(), camada_zonas(imagem.shape, zonas))
 
 
 # Exibição ------------------------------------------------------------------

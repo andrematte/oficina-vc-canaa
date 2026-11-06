@@ -20,20 +20,17 @@ VERDE = "#1FBF4F"
 
 # Cores fixas por classe nas caixas de detecção -----------------------------
 # Chave: nome da classe em minúsculas, sem acento. Valor: (cor da caixa, cor do texto da etiqueta).
+# As classes do Modelo pré-treinado ficam todas em amarelo; as quatro cores de
+# CORES_RESERVA são as dos Tipos de veículo do Modelo especialista.
 CORES_CLASSES = {
-    "pessoa": (AMARELO, NAVY),
-    "person": (AMARELO, NAVY),
-    "demais pedestres": (AMARELO, NAVY),
-    "crianca": ("#1FBF4F", NAVY),
-    "idoso": ("#5B70F4", OFF_WHITE),
-    "pessoa com deficiencia": ("#F01414", OFF_WHITE),
+    nome: (AMARELO, NAVY)
+    for nome in ("car", "carro", "motorcycle", "moto", "bus", "onibus", "truck", "caminhao", "person", "pessoa")
 }
 # Para classes fora da tabela, em ordem.
 CORES_RESERVA = [(AMARELO, NAVY), ("#1FBF4F", NAVY), ("#5B70F4", OFF_WHITE), ("#F01414", OFF_WHITE)]
 
-COR_LINHA_ZONA = AZUL
-ALFA_ZONA = 0.22  # preenchimento translúcido da Zona
-ALFA_LINHA = 0.85
+COR_ZONA = AZUL
+ALFA_ZONA = 0.22  # preenchimento translúcido das Zonas
 
 # Nomes das classes do COCO que aparecem na Oficina, em português.
 NOMES_PT = {
