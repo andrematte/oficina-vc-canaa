@@ -134,6 +134,72 @@ class GravadorH264:
             raise RuntimeError(f"O ffmpeg falhou ao gravar o vídeo:\n{erro}")
 
 
+# Demonstração do rastreamento ---------------------------------------------------
+CORES_RASTRO = [estilo.AMARELO, estilo.VERDE, "#5B70F4", "#F01414", estilo.OFF_WHITE, "#FF8A00", "#00C2D1", "#E040FB"]
+
+
+def rastrear_trecho(video, modelo, inicio=17, segundos=2, mostrados=4):
+    """Rastreia um trecho curto do vídeo e mostra `mostrados` quadros dele numa grade 2×2.
+
+    Usa os mesmos valores do Case (classes, confiança, `imgsz`, `passo` e o ByteTrack
+    calibrado), com um rastreador novo: os IDs começam em 1 no início do trecho. Cada
+    ID tem a sua cor, e a linha atrás de cada veículo é o Rastro desde o início do trecho.
+    """
+    from . import case
+
+    captura = cv2.VideoCapture(str(video))
+    fps = captura.get(cv2.CAP_PROP_FPS) or case.FPS_DO_VIDEO
+    primeiro = int(round(inicio * fps))
+    captura.set(cv2.CAP_PROP_POS_FRAMES, primeiro)
+    n = max(int(segundos * fps / case.PASSO), mostrados + 1)
+    escolhidos = set(np.linspace(n // (mostrados + 1), n - 1, mostrados).round().astype(int))
+
+    rastreador = case.criar_rastreador()
+    paleta = sv.ColorPalette([sv.Color.from_hex(c) for c in CORES_RASTRO])
+    caixas = sv.BoxAnnotator(color=paleta, color_lookup=sv.ColorLookup.TRACK, thickness=3)
+    rotulos = sv.LabelAnnotator(color=paleta, color_lookup=sv.ColorLookup.TRACK, text_color=sv.Color.from_hex(estilo.NAVY),
+                                text_scale=0.6, text_thickness=2, text_padding=4)
+    rastros = sv.TraceAnnotator(color=paleta, color_lookup=sv.ColorLookup.TRACK, position=sv.Position.BOTTOM_CENTER,
+                                trace_length=n, thickness=3)
+    argumentos = {"conf": case.CONFIANCA, "classes": case.CLASSES, "imgsz": case.IMGSZ, "verbose": False}
+    quadros = []
+    try:
+        for indice in range(n):
+            for _ in range(case.PASSO - 1 if indice else 0):
+                captura.grab()
+            ok, quadro = captura.read()
+            if not ok:
+                break
+            deteccoes = sv.Detections.from_ultralytics(modelo(quadro, **argumentos)[0])
+            deteccoes = deteccoes.with_nms(threshold=0.6, class_agnostic=True)
+            deteccoes = _atualizar_rastreador(rastreador, deteccoes)
+            deteccoes = deteccoes[deteccoes.tracker_id >= 0]
+            quadro = rastros.annotate(quadro, deteccoes)  # o TraceAnnotator guarda o caminho de cada ID
+            if indice in escolhidos:
+                quadro = caixas.annotate(quadro, deteccoes)
+                quadro = rotulos.annotate(quadro, deteccoes, labels=[f"#{i}" for i in deteccoes.tracker_id])
+                t = (primeiro + indice * case.PASSO) / fps
+                quadros.append(_carimbar(cv2.resize(quadro, (640, 360), interpolation=cv2.INTER_AREA), f"{t:.1f} s".replace(".", ",")))
+    finally:
+        captura.release()
+    if not quadros:
+        print("Esse trecho fica depois do fim do vídeo: escolha um início menor.")
+        return
+    while len(quadros) % 2:
+        quadros.append(np.full_like(quadros[0], 255))
+    linhas = [np.hstack(quadros[i : i + 2]) for i in range(0, len(quadros), 2)]
+    desenho.mostrar(np.vstack(linhas), largura=960)
+
+
+def _carimbar(quadro, texto):
+    """Escreve o instante no canto de cima à esquerda, numa etiqueta azul."""
+    from PIL import Image
+
+    imagem = Image.fromarray(cv2.cvtColor(quadro, cv2.COLOR_BGR2RGB)).convert("RGBA")
+    imagem.alpha_composite(desenho._etiqueta(texto, tamanho=22), (8, 8))
+    return cv2.cvtColor(np.asarray(imagem.convert("RGB")), cv2.COLOR_RGB2BGR)
+
+
 # O laço ----------------------------------------------------------------------
 def _atualizar_rastreador(rastreador, deteccoes):
     if hasattr(rastreador, "update"):

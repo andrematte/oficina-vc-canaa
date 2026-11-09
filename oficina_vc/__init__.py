@@ -31,6 +31,7 @@ _ONDE = {
     "ContadorDeMovimentos": "movimentos",
     "tipo_de_movimento": "movimentos",
     "processar_video": "video",
+    "rastrear_trecho": "video",
     "resultado_pronto": "video",
     "ResultadoCase": "video",
     "preparar_dataset": "fine_tuning",
