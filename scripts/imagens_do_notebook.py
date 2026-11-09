@@ -3,7 +3,7 @@
 Na prática o projetor fica no Colab, sem slide de apoio; estas imagens trazem a
 teoria para dentro do notebook ("Conteúdo didático dentro dos notebooks"):
 
-    mapa-do-case       tira com o quadro, as caixas, os Rastros e as Zonas da Cena-âncora
+    mapa-do-case       tira com o quadro, as caixas, os Rastros e as Zonas (de oficina_vc/case.py)
     pixel-rgb          o último quadro da animação 01b (o mesmo pixel, três números)
     coco-lote          um lote de treino do COCO, com as caixas e o número de cada classe
     movimentos-norte   as três saídas de quem vem do Norte: reto, direita e esquerda
@@ -40,14 +40,18 @@ QUALIDADE = 82
 
 
 # Tira da abertura ------------------------------------------------------------
-def mapa_do_case(cena):
-    """Quatro miniaturas da Cena-âncora com o passo de cada uma embaixo."""
+def mapa_do_case(cena, dados):
+    """Quatro miniaturas da Cena-âncora com o passo de cada uma embaixo.
+
+    Caixas e Rastros vêm das camadas do deck; as Zonas são desenhadas a partir de
+    `oficina_vc/case.py`, para seguirem o notebook mesmo se mudarem depois do deck.
+    """
     base = Image.open(cena / "00-quadro.png").convert("RGBA")
     passos = [
         (None, "Vídeo"),
         ("02-deteccao.png", "Detectar"),
         ("04-rastreamento.png", "Rastrear"),
-        ("05-zonas.png", "Contar por Zona"),
+        ("zonas", "Contar por Zona"),
     ]
     larg, alt, margem, legenda = 400, 225, 20, 56
     tira = Image.new("RGB", (4 * larg + 5 * margem, alt + legenda + 2 * margem), estilo.OFF_WHITE)
@@ -55,7 +59,9 @@ def mapa_do_case(cena):
     fonte = estilo.fonte(28, negrito=True)
     for i, (camada, texto) in enumerate(passos):
         quadro = base.copy()
-        if camada:
+        if camada == "zonas":
+            quadro = quadro_com_zonas(dados).convert("RGBA")
+        elif camada:
             quadro.alpha_composite(Image.open(cena / camada).convert("RGBA"))
         x = margem + i * (larg + margem)
         tira.paste(quadro.convert("RGB").resize((larg, alt), Image.LANCZOS), (x, margem))
@@ -143,23 +149,22 @@ def _rotulo(traco, xy, texto, cor):
     traco.text((x + m - x0, y + m), texto, font=fonte, fill=estilo.NAVY if claro else estilo.OFF_WHITE)
 
 
-def movimentos_norte(dados):
-    """O quadro com as Zonas e as três saídas de um veículo que chega pelo Norte."""
+def quadro_com_zonas(dados):
+    """A Cena-âncora com as Zonas de `oficina_vc/case.py` (RGB)."""
     import cv2
     import numpy as np
 
-    from oficina_vc.case import criar_zonas
+    from oficina_vc.case import ZONAS, criar_zonas
 
-    zonas = {  # as mesmas da etapa 4 do notebook
-        "Norte": [(495, 55), (725, 55), (805, 235), (470, 235)],
-        "Leste": [(890, 215), (1275, 225), (1275, 410), (1120, 420), (990, 330)],
-        "Sul": [(540, 625), (1130, 560), (1200, 695), (560, 695)],
-        "Oeste": [(0, 290), (300, 278), (445, 252), (455, 345), (310, 360), (310, 575), (0, 580)],
-    }
     quadro = cv2.imread(str(dados / "cena_ancora_bellevue_623.png"))
-    cor, alfa, _ = camada_zonas(quadro.shape, criar_zonas(zonas))
+    cor, alfa, _ = camada_zonas(quadro.shape, criar_zonas(ZONAS))
     quadro = (quadro * (1 - alfa) + cor * alfa).astype(np.uint8)
-    imagem = Image.fromarray(cv2.cvtColor(quadro, cv2.COLOR_BGR2RGB)).convert("RGBA")
+    return Image.fromarray(cv2.cvtColor(quadro, cv2.COLOR_BGR2RGB))
+
+
+def movimentos_norte(dados):
+    """O quadro com as Zonas e as três saídas de um veículo que chega pelo Norte."""
+    imagem = quadro_com_zonas(dados).convert("RGBA")
     # escurece um pouco o fundo para as setas saltarem
     imagem = Image.alpha_composite(imagem, Image.new("RGBA", imagem.size, (20, 25, 61, 70)))
     traco = ImageDraw.Draw(imagem)
@@ -211,7 +216,7 @@ def main():
     a = p.parse_args()
 
     imagens = {
-        "mapa-do-case": mapa_do_case(a.instrutor / "deck" / "cena-ancora"),
+        "mapa-do-case": mapa_do_case(a.instrutor / "deck" / "cena-ancora", a.dados),
         "pixel-rgb": pixel_rgb(a.instrutor / "animacoes"),
         "coco-lote": coco_lote(),
         "movimentos-norte": movimentos_norte(a.dados),

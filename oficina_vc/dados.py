@@ -24,8 +24,8 @@ ARQUIVOS = {
     "cena_ancora_bellevue_623.png": Arquivo("1v099NqG_Iab19DdfcZfzQoGZHPkdW6sD", 1_242_855, "Cena-âncora"),
     "yolo26n.pt": Arquivo("1Ben17d7u2o3t0kjPWCGfsJCH0YvN-OlR", 5_544_453, "modelo"),
     # Gerados por scripts/gerar_resultado_pronto.py
-    "case_resultado_pronto.mp4": Arquivo("12vMS44385rEu63b5DWo2w6C7lZtJkLuF", 5_598_054, "Resultado pronto (vídeo)"),
-    "case_metricas.json": Arquivo("1h8Aa2T9UaoO-Eo1P2RNcYTX-UKDnSGSP", 11_858, "Resultado pronto (métricas)"),
+    "case_resultado_pronto.mp4": Arquivo("12vMS44385rEu63b5DWo2w6C7lZtJkLuF", 5_571_043, "Resultado pronto (vídeo)"),
+    "case_metricas.json": Arquivo("1h8Aa2T9UaoO-Eo1P2RNcYTX-UKDnSGSP", 11_775, "Resultado pronto (métricas)"),
     # Gerado por scripts/dataset_tipos_de_veiculo.py exportar
     "dataset_tipos_de_veiculo.zip": Arquivo("1SoMhFyZgqxm2V_QT8DvGPc4S4TM1fnTw", 147_757_846, "dataset de Tipos de veículo (YOLO)"),
     # Gerados por scripts/treinar_tipos_de_veiculo.py treinar

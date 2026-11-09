@@ -29,9 +29,9 @@ ZONAS = {
     "Leste": [(890, 215), (1275, 225), (1275, 410), (1120, 420), (990, 330)],
     # a saída para o sul, entre a faixa branca curva e a faixa do relógio
     "Sul": [(540, 625), (1130, 560), (1200, 695), (560, 695)],
-    # a NE 8th a oeste: a fila parada embaixo e, em cima, as faixas de saída até a esquina,
-    # onde quem vem do Norte e converte à direita costuma trocar de ID
-    "Oeste": [(0, 290), (300, 278), (445, 252), (455, 345), (310, 360), (310, 575), (0, 580)],
+    # a NE 8th a oeste, da borda do quadro até a esquina: quem vem do Norte e converte à
+    # direita costuma trocar de ID na curva, e assim entra na Zona antes da troca
+    "Oeste": [(0, 290), (445, 252), (455, 580), (0, 580)],
 }
 
 
