@@ -71,7 +71,7 @@ def treinar(opcoes):
         modelo.train(
             data=str(yaml), epochs=opcoes.epocas, imgsz=case.IMGSZ, batch=opcoes.lote, device=opcoes.dispositivo,
             project=str(TREINOS), name=opcoes.nome, exist_ok=True, seed=0, patience=opcoes.paciencia,
-            workers=0, plots=True, verbose=False, freeze=opcoes.congelar, cls_pw=opcoes.balancear,
+            workers=0, plots=True, verbose=False, freeze=opcoes.congelar,
         )
     minutos = (time.time() - inicio) / 60
     melhor = TREINOS / opcoes.nome / "weights" / "best.pt"
@@ -82,7 +82,7 @@ def treinar(opcoes):
 
     especialista = YOLO(str(pesos))
     metricas = {"epocas_pedidas": opcoes.epocas, "minutos_de_treino": round(minutos, 1), "imgsz": case.IMGSZ,
-                "freeze": opcoes.congelar, "cls_pw": opcoes.balancear}
+                "freeze": opcoes.congelar}
     for divisao in ("val", "test"):
         r = especialista.val(data=str(yaml), split=divisao, imgsz=case.IMGSZ, device=opcoes.dispositivo,
                              project=str(TREINOS), name=f"aval_{opcoes.nome}_{divisao}", exist_ok=True, plots=True, verbose=False)
@@ -132,9 +132,6 @@ def main():
     t.add_argument("--pesos", type=Path, default=PESOS, help="onde gravar o especialista")
     t.add_argument("--congelar", type=int, default=11,
                    help="camadas congeladas (11 = o Corpo do YOLO26n, como no notebook e na animação; 0 = nenhuma)")
-    t.add_argument("--balancear", type=float, default=0.0,
-                   help="cls_pw do Ultralytics: peso de cada classe no erro = (1 / nº de caixas) ** valor, "
-                        "com média 1 (0 = sem balancear; 0,5 = meio-termo; 1 = inverso da frequência)")
     t.add_argument("--nome", default="especialista", help="pasta do treino em ~/.cache/oficina-vc/treinos")
     t.add_argument("--retomar", action="store_true",
                    help="continua o treino interrompido de --nome a partir do last.pt (não descompacta o zip de novo)")

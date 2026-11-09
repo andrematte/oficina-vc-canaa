@@ -2,7 +2,7 @@
 
 O treino em si (`modelo.train(..., freeze=11)`) fica à vista no notebook: é ele que
 ilustra a teoria. Aqui fica o que só atrapalharia a leitura: descompactar o dataset,
-desenhar as curvas e as grades, traduzir as métricas e recortar os veículos do desafio.
+desenhar as curvas e as grades, traduzir as métricas e recortar os seis veículos.
 """
 
 import csv
@@ -123,19 +123,6 @@ def foto_do_dataset(yaml, divisao="treino", numero=0):
     anotacao = Path(str(foto).replace("/images/", "/labels/")).with_suffix(".txt")
     desenhada = _desenhar_gabarito(cv2.imread(str(foto)), _rotulos(foto), classes_do_dataset(yaml))
     return foto, anotacao, desenhada
-
-
-def amostras(yaml, divisao="train", n=4, semente=3):
-    """Mostra `n` quadros do dataset com as caixas anotadas (o gabarito que o modelo vai imitar).
-
-    Prefere quadros com classes raras, para que as cinco cores apareçam.
-    """
-    nomes = classes_do_dataset(yaml)
-    imagens = sorted((PASTA_DATASET / "images" / divisao).glob("*.jpg"))
-    raras = [i for i in imagens if len({c for c, *_ in _rotulos(i)} - {0}) >= 2]
-    escolhidas = list(np.random.default_rng(semente).choice(raras or imagens, size=min(n, len(raras or imagens)), replace=False))
-    desenhos = [_desenhar_gabarito(cv2.imread(str(i)), _rotulos(i), nomes) for i in escolhidas]
-    desenho.mostrar(_mosaico(desenhos), largura=1100)
 
 
 # Treino ----------------------------------------------------------------------
@@ -416,5 +403,3 @@ def seis_veiculos(modelos):
     print("\nAcertos: " + " × ".join(f"{nome} {pontos}/{len(DESAFIO)}" for nome, pontos in placar.items()))
     return placar
 
-
-que_veiculo_e_esse = seis_veiculos  # nome antigo, do desafio

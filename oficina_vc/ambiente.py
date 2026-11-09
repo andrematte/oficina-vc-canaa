@@ -20,11 +20,9 @@ O clone fica na célula porque a biblioteca só existe depois dele. Todo o resto
 (instalação, downloads, checklist) está em `preparar`.
 
 **Modo local** (sem Colab, no computador do instrutor): o clone e o `pip install`
-são pulados, os arquivos vêm de uma pasta local e um caminho local substitui o
-`drive.mount`. Dois caminhos podem ser trocados por variáveis de ambiente:
-
-- `OFICINA_VC_DADOS`: pasta com os arquivos da `oficina-vc-publico/` (padrão: `dados/` no repositório);
-- `OFICINA_VC_INSTRUTOR`: cópia local da `oficina-vc-instrutor/` (padrão: `../drive/oficina-vc-instrutor`).
+são pulados e os arquivos vêm de uma pasta local. A variável de ambiente
+`OFICINA_VC_DADOS` troca essa pasta (padrão: `dados/` no repositório), por exemplo
+pela cópia da `oficina-vc-publico/`.
 
 Este módulo só usa a biblioteca padrão: ele roda antes do `pip install`.
 """
@@ -45,14 +43,6 @@ if EM_COLAB:
 else:
     PASTA_DADOS = Path(os.environ.get("OFICINA_VC_DADOS", PASTA_REPO / "dados"))
     PASTA_SAIDAS = PASTA_REPO / "saidas"
-
-# Pasta do instrutor no "Meu Drive" da conta do iSACI, vista pelo drive.mount.
-PASTA_INSTRUTOR_COLAB = Path(
-    "/content/drive/MyDrive/Palestras/20261111 - Semana do IDURB - Visao Computacional/oficina-vc-instrutor"
-)
-PASTA_INSTRUTOR_LOCAL = Path(
-    os.environ.get("OFICINA_VC_INSTRUTOR", PASTA_REPO.parent / "drive" / "oficina-vc-instrutor")
-)
 
 # Versões fixadas (as mesmas de requirements.txt).
 PACOTES = {
@@ -104,23 +94,6 @@ def dispositivo():
     if torch.backends.mps.is_available():
         return "mps", "GPU do Mac (mps)"
     return "cpu", "CPU"
-
-
-def pasta_instrutor():
-    """Pasta do instrutor, se esta conta tiver acesso a ela; senão, None.
-
-    No Colab, monta o Drive de quem roda o notebook (só o instrutor encontra a pasta).
-    No Modo local, usa a cópia local.
-    """
-    if EM_COLAB:
-        from google.colab import drive
-
-        if not Path("/content/drive/MyDrive").exists():
-            drive.mount("/content/drive")
-        pasta = PASTA_INSTRUTOR_COLAB
-    else:
-        pasta = PASTA_INSTRUTOR_LOCAL
-    return pasta if pasta.is_dir() else None
 
 
 def preparar(notebook):
