@@ -12,21 +12,25 @@ from .ambiente import PASTA_DADOS
 
 @dataclass(frozen=True)
 class Arquivo:
-    id_drive: str  # vazio enquanto o arquivo não foi para o Drive
+    id_drive: str  # ID do arquivo na pasta pública do Drive
     tamanho: int | None  # em bytes; None = só confere se existe
     descricao: str
 
 
-# Os IDs são preenchidos em "Transferir as pastas para o Drive do iSACI".
+# IDs da pasta pública (https://drive.google.com/drive/folders/1jNzljo__R_z26QzzmlxexHj70MTcca6Q),
+# preenchidos em 08/11/2026 em "Transferir as pastas para o Drive do iSACI".
 ARQUIVOS = {
-    "bellevue-ne8th_2762-2802s.mp4": Arquivo("", 14_264_302, "vídeo"),
-    "cena_ancora_bellevue_623.png": Arquivo("", 1_242_855, "Cena-âncora"),
-    "yolo26n.pt": Arquivo("", 5_544_453, "modelo"),
+    "bellevue-ne8th_2762-2802s.mp4": Arquivo("1i9A0KF3kPFfU3DUpe5fWQ-30SKQ74Go1", 14_264_302, "vídeo"),
+    "cena_ancora_bellevue_623.png": Arquivo("1v099NqG_Iab19DdfcZfzQoGZHPkdW6sD", 1_242_855, "Cena-âncora"),
+    "yolo26n.pt": Arquivo("1Ben17d7u2o3t0kjPWCGfsJCH0YvN-OlR", 5_544_453, "modelo"),
     # Gerados por scripts/gerar_resultado_pronto.py
-    "case_resultado_pronto.mp4": Arquivo("", 5_598_054, "Resultado pronto (vídeo)"),
-    "case_metricas.json": Arquivo("", 11_858, "Resultado pronto (métricas)"),
+    "case_resultado_pronto.mp4": Arquivo("12vMS44385rEu63b5DWo2w6C7lZtJkLuF", 5_598_054, "Resultado pronto (vídeo)"),
+    "case_metricas.json": Arquivo("1h8Aa2T9UaoO-Eo1P2RNcYTX-UKDnSGSP", 11_858, "Resultado pronto (métricas)"),
     # Gerado por scripts/dataset_tipos_de_veiculo.py exportar
-    "dataset_tipos_de_veiculo.zip": Arquivo("", 147_757_846, "dataset de Tipos de veículo (YOLO)"),
+    "dataset_tipos_de_veiculo.zip": Arquivo("1SoMhFyZgqxm2V_QT8DvGPc4S4TM1fnTw", 147_757_846, "dataset de Tipos de veículo (YOLO)"),
+    # Gerados por scripts/treinar_tipos_de_veiculo.py treinar
+    "yolo26n_tipos_de_veiculo.pt": Arquivo("1B20FEBFuBMk8_A-3g1AaQpryjF2SIiVS", 5_481_861, "Modelo especialista treinado antes"),
+    "yolo26n_tipos_de_veiculo_treino.csv": Arquivo("1rqZGIPmvzWPaQt5LouyoG6n7oMStnM16", 16_577, "curvas do Modelo especialista"),
 }
 
 # O que cada notebook baixa no bootstrap.
@@ -42,6 +46,8 @@ CONJUNTOS = {
         "bellevue-ne8th_2762-2802s.mp4",
         "yolo26n.pt",
         "dataset_tipos_de_veiculo.zip",
+        "yolo26n_tipos_de_veiculo.pt",
+        "yolo26n_tipos_de_veiculo_treino.csv",
     ],
 }
 

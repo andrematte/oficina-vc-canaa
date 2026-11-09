@@ -46,9 +46,10 @@ else:
     PASTA_DADOS = Path(os.environ.get("OFICINA_VC_DADOS", PASTA_REPO / "dados"))
     PASTA_SAIDAS = PASTA_REPO / "saidas"
 
-# Pasta do instrutor no Drive, vista pelo drive.mount. Se ela ficar num drive
-# compartilhado, o caminho vira /content/drive/Shareddrives/<nome>/oficina-vc-instrutor.
-PASTA_INSTRUTOR_COLAB = Path("/content/drive/MyDrive/oficina-vc-instrutor")
+# Pasta do instrutor no "Meu Drive" da conta do iSACI, vista pelo drive.mount.
+PASTA_INSTRUTOR_COLAB = Path(
+    "/content/drive/MyDrive/Palestras/20261111 - Semana do IDURB - Visao Computacional/oficina-vc-instrutor"
+)
 PASTA_INSTRUTOR_LOCAL = Path(
     os.environ.get("OFICINA_VC_INSTRUTOR", PASTA_REPO.parent / "drive" / "oficina-vc-instrutor")
 )

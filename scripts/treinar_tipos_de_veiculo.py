@@ -7,8 +7,9 @@ ajustado no dataset de `dataset_tipos_de_veiculo.py` (Carro, Pickup, Van, Caminh
 Etapas:
 
     treinar    YOLO26n pré-treinado → especialista (mps), com imgsz 960 como o Case;
-               grava `yolo26n_tipos_de_veiculo.pt` e o mAP50 do teste em
-               `yolo26n_tipos_de_veiculo.json`, na pasta do instrutor
+               grava `yolo26n_tipos_de_veiculo.pt` e as curvas (`_treino.csv`) na pasta
+               pública e o mAP50 do teste em `yolo26n_tipos_de_veiculo.json`, na do instrutor;
+               congela o Corpo (`--congelar 11`), como o notebook e a animação
     render     processa os 40 s do Case com o especialista (mesmas Zonas, rastreador,
                confiança, imgsz e passo do `oficina_vc/case.py`), com o NMS entre
                classes e o voto de classe por rastro do `processar_video`: a Matriz de
@@ -33,8 +34,11 @@ sys.path.insert(0, str(RAIZ))
 
 DRIVE = RAIZ.parent / "drive"
 ZIP = DRIVE / "oficina-vc-publico" / "dataset_tipos_de_veiculo.zip"
+PUBLICO = DRIVE / "oficina-vc-publico"
 MODELOS = DRIVE / "oficina-vc-instrutor" / "modelos"
-PESOS = MODELOS / "yolo26n_tipos_de_veiculo.pt"
+# O especialista e as curvas do treino vão para a pasta pública: o notebook do fine-tuning os baixa.
+# As métricas (.json) e o render de reserva ficam na pasta do instrutor.
+PESOS = PUBLICO / "yolo26n_tipos_de_veiculo.pt"
 TREINOS = Path.home() / ".cache" / "oficina-vc" / "treinos"
 
 
@@ -61,23 +65,26 @@ def treinar(opcoes):
     modelo = YOLO(str(DRIVE / "oficina-vc-publico" / "yolo26n.pt"))
     modelo.train(
         data=str(yaml), epochs=opcoes.epocas, imgsz=case.IMGSZ, batch=opcoes.lote, device=opcoes.dispositivo,
-        project=str(TREINOS), name="especialista", exist_ok=True, seed=0, patience=opcoes.paciencia,
-        workers=0, plots=True, verbose=False,
+        project=str(TREINOS), name=opcoes.nome, exist_ok=True, seed=0, patience=opcoes.paciencia,
+        workers=0, plots=True, verbose=False, freeze=opcoes.congelar,
     )
     minutos = (time.time() - inicio) / 60
-    melhor = TREINOS / "especialista" / "weights" / "best.pt"
+    melhor = TREINOS / opcoes.nome / "weights" / "best.pt"
     pesos = opcoes.pesos
     pesos.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy(melhor, pesos)
+    shutil.copy(TREINOS / opcoes.nome / "results.csv", pesos.with_name(pesos.stem + "_treino.csv"))
 
     especialista = YOLO(str(pesos))
-    metricas = {"epocas_pedidas": opcoes.epocas, "minutos_de_treino": round(minutos, 1), "imgsz": case.IMGSZ}
+    metricas = {"epocas_pedidas": opcoes.epocas, "minutos_de_treino": round(minutos, 1), "imgsz": case.IMGSZ,
+                "freeze": opcoes.congelar}
     for divisao in ("val", "test"):
         r = especialista.val(data=str(yaml), split=divisao, imgsz=case.IMGSZ, device=opcoes.dispositivo,
-                             project=str(TREINOS), name=f"aval_{divisao}", exist_ok=True, plots=True, verbose=False)
+                             project=str(TREINOS), name=f"aval_{opcoes.nome}_{divisao}", exist_ok=True, plots=True, verbose=False)
         por_classe = {especialista.names[int(c)]: round(float(r.box.ap50[k]), 3) for k, c in enumerate(r.box.ap_class_index)}
         metricas[divisao] = {"mAP50": round(float(r.box.map50), 3), "mAP50-95": round(float(r.box.map), 3), "mAP50_por_classe": por_classe}
-    pesos.with_suffix(".json").write_text(json.dumps(metricas, ensure_ascii=False, indent=1), encoding="utf-8")
+    metricas_json = MODELOS / (pesos.stem + ".json") if pesos == PESOS else pesos.with_suffix(".json")
+    metricas_json.write_text(json.dumps(metricas, ensure_ascii=False, indent=1), encoding="utf-8")
     print(json.dumps(metricas, ensure_ascii=False, indent=1))
     print(f"\n{pesos} ({pesos.stat().st_size:_} bytes), {minutos:.1f} min")
 
@@ -118,6 +125,9 @@ def main():
     t.add_argument("--dispositivo", default="mps")
     t.add_argument("--zip", type=Path, default=ZIP)
     t.add_argument("--pesos", type=Path, default=PESOS, help="onde gravar o especialista")
+    t.add_argument("--congelar", type=int, default=11,
+                   help="camadas congeladas (11 = o Corpo do YOLO26n, como no notebook e na animação; 0 = nenhuma)")
+    t.add_argument("--nome", default="especialista", help="pasta do treino em ~/.cache/oficina-vc/treinos")
     r = sub.add_parser("render")
     r.add_argument("--dispositivo", default="cpu")
     r.add_argument("--pesos", type=Path, default=PESOS)

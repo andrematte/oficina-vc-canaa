@@ -104,17 +104,8 @@ def ao_vivo(opcoes):
 
 
 # Desafio "Que veículo é esse?" -----------------------------------------------------
-# (rótulo, quadro do trecho de 40 s, caixa na fonte 1280×720, resposta certa). A Cena-âncora
-# (quadro 623) não tem Pickup nem Caminhão: esses dois vêm de outros quadros dos mesmos 40 s.
-# O Ônibus (F) é opcional: o pré-treinado acerta, e isso deixa o placar honesto.
-DESAFIO = [
-    ("A", 180, (226, 286, 316, 337), "pickup"),
-    ("B", 623, (975, 310, 1056, 362), "carro"),  # o SUV: conta como Carro
-    ("C", 623, (146, 483, 299, 567), "van"),
-    ("D", 300, (815, 258, 961, 339), "caminhão"),  # o caminhão-plataforma, Norte → Leste
-    ("E", 623, (792, 304, 911, 385), "carro"),
-    ("F", 623, (555, 196, 661, 416), "ônibus"),
-]
+# Os recortes ficam em oficina_vc/fine_tuning.py: o notebook do fine-tuning refaz o desafio ao vivo.
+from oficina_vc.fine_tuning import DESAFIO  # noqa: E402
 
 
 def _quadro_do_trecho(n):
@@ -127,26 +118,19 @@ def _quadro_do_trecho(n):
     return np.frombuffer(saida, np.uint8).reshape(720, 1280, 3).copy()
 
 
-def _resposta(modelo, quadro, caixa, imgsz=960):
-    """Classe da detecção do modelo que mais se sobrepõe à caixa (no quadro inteiro, como no Case)."""
-    r = modelo(quadro, imgsz=imgsz, conf=0.1, verbose=False)[0]
-    melhor, nome = 0.0, "—"
-    for b, c, p in zip(r.boxes.xyxy.tolist(), r.boxes.cls.tolist(), r.boxes.conf.tolist()):
-        x1, y1 = max(b[0], caixa[0]), max(b[1], caixa[1])
-        x2, y2 = min(b[2], caixa[2]), min(b[3], caixa[3])
-        inter = max(0, x2 - x1) * max(0, y2 - y1)
-        uniao = (b[2] - b[0]) * (b[3] - b[1]) + (caixa[2] - caixa[0]) * (caixa[3] - caixa[1]) - inter
-        iou = inter / uniao
-        if iou > 0.5 and iou * p > melhor:
-            melhor, nome = iou * p, f"{modelo.names[int(c)]} ({p:.2f})".replace(".", ",")
-    return nome
+def _resposta(modelo, quadro, caixa):
+    """'classe (0,87)' da detecção que mais se sobrepõe à caixa, como no notebook (oficina_vc.fine_tuning.resposta)."""
+    from oficina_vc.fine_tuning import resposta
+
+    classe, confianca = resposta(modelo, quadro, caixa)
+    return classe if confianca is None else f"{classe} ({confianca:.2f})".replace(".", ",")
 
 
 def desafio(opcoes):
     from ultralytics import YOLO
 
     pre = YOLO(str(PUBLICO / "yolo26n.pt"))
-    especialista = YOLO(str(DRIVE / "oficina-vc-instrutor" / "modelos" / "yolo26n_tipos_de_veiculo.pt"))
+    especialista = YOLO(str(PUBLICO / "yolo26n_tipos_de_veiculo.pt"))
     pasta = DESTINO / "desafio-que-veiculo"
     pasta.mkdir(parents=True, exist_ok=True)
     quadros = {n: _quadro_do_trecho(n) for n in {d[1] for d in DESAFIO}}

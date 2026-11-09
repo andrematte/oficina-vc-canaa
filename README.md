@@ -1,4 +1,4 @@
-# Visão Computacional Aplicada à Cidade
+# Visão Computacional para Cidades Inteligentes
 
 **Como imagens viram dados de cidade**
 
@@ -13,7 +13,7 @@ Instituto Sustentabilidade da Amazônia com Ciência e Inovação (iSACI)
 
 | | |
 |---|---|
-| **Slides da Oficina (PDF)** | [baixar o PDF](LINK_DO_PDF) |
+| **Slides da Oficina (PDF)** | [baixar o PDF](https://drive.google.com/file/d/1XO15YpU_RtkseSadwIe09qCqq3jYAU-m/view) |
 | **1. Case de tráfego**<br>Detectar, rastrear e contar os movimentos dos veículos num cruzamento | [![Abrir no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/andrematte/oficina-vc-canaa/blob/v2026.11.11/1_case_trafego.ipynb) |
 | **2. Fine-tuning de Tipos de veículo**<br>Ensinar o modelo a separar Carro, Pickup, Van, Caminhão e Ônibus | [![Abrir no Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/andrematte/oficina-vc-canaa/blob/v2026.11.11/2_fine_tuning_tipos_de_veiculo.ipynb) |
 
@@ -58,5 +58,6 @@ Vídeos e modelos não ficam no repositório: a célula de preparação os baixa
 
 - **Código**: [GNU AGPL-3.0](LICENSE). Os notebooks usam o [Ultralytics YOLO](https://github.com/ultralytics/ultralytics), também AGPL-3.0. **Uso comercial** do Ultralytics, inclusive de modelos treinados com ele, exige a [licença Enterprise da Ultralytics](https://www.ultralytics.com/license). Este aviso não é parecer jurídico.
 - **Vídeo e imagens do Case**: cruzamento Bellevue Way × NE 8th, do [Bellevue Traffic Video Dataset](https://github.com/City-of-Bellevue/TrafficVideoDataset) da City of Bellevue, sem licença formal, usado para ensino e pesquisa. Detalhes e crédito em [LICENCA-VIDEO.md](LICENCA-VIDEO.md).
+- **Dataset de Tipos de veículo** (notebook 2): 366 quadros do mesmo Bellevue Traffic Video Dataset; caixas do YOLO26n pré-treinado, classes sugeridas pelo [Moondream 3](https://moondream.ai) (BSL 1.1) e revisadas à mão. Crédito e detalhes no `LEIA-ME.md` dentro do zip.
 - **Fonte Raleway** (em `oficina_vc/fontes/`): SIL Open Font License 1.1, em [OFL.txt](oficina_vc/fontes/OFL.txt).
 - **Slides**: © André Mattos / iSACI, CC BY-NC-SA 4.0, exceto onde indicado.

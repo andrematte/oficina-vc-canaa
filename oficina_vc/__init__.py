@@ -1,4 +1,4 @@
-"""Biblioteca local da Oficina "Visão Computacional Aplicada à Cidade" (Canaã dos Carajás, 11/11/2026).
+"""Biblioteca local da Oficina "Visão Computacional para Cidades Inteligentes" (Canaã dos Carajás, 11/11/2026).
 
 Guarda o que não cabe explicar numa oficina curta: o laço de vídeo, a contagem
 dos Movimentos, o painel de métricas, os desenhos, os downloads e a preparação
@@ -30,6 +30,16 @@ _ONDE = {
     "processar_video": "video",
     "resultado_pronto": "video",
     "ResultadoCase": "video",
+    "preparar_dataset": "fine_tuning",
+    "contar": "fine_tuning",
+    "amostras": "fine_tuning",
+    "pasta_do_treino": "fine_tuning",
+    "curvas": "fine_tuning",
+    "acompanhar": "fine_tuning",
+    "especialista_pronto": "fine_tuning",
+    "provar": "fine_tuning",
+    "grade_de_teste": "fine_tuning",
+    "que_veiculo_e_esse": "fine_tuning",
 }
 
 __all__ = sorted(_ONDE)
