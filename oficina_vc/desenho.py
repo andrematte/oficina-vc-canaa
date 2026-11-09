@@ -72,6 +72,18 @@ def desenhar_caixas(imagem, deteccoes, nomes=None, rotulos=None):
     return rotulador.annotate(saida, det, labels=rotulos)
 
 
+def tabela_de_caixas(deteccoes, n=5, nomes=None):
+    """Escreve as `n` primeiras caixas como números: classe, confiança e os dois cantos."""
+    if nomes is None:
+        nomes = nomes_das_classes(deteccoes)
+    det = _para_deteccoes(deteccoes)
+    print(f"As {min(n, len(det))} primeiras caixas, em números:")
+    print("classe      confiança     x1    y1    x2    y2")
+    for (x1, y1, x2, y2), classe, confianca in list(zip(det.xyxy, det.class_id, det.confidence))[:n]:
+        nome = estilo.nome_pt(nomes.get(int(classe), str(classe)))
+        print(f"{nome:<10}  {confianca:9.2f}  {x1:5.0f} {y1:5.0f} {x2:5.0f} {y2:5.0f}".replace(".", ","))
+
+
 # Zonas por Aproximação -------------------------------------------------------
 def _etiqueta(texto, tamanho=26):
     """Etiqueta azul com texto off-white (RGBA)."""

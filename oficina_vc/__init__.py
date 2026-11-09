@@ -22,6 +22,7 @@ _ONDE = {
     "mostrar": "desenho",
     "mostrar_video": "desenho",
     "desenhar_caixas": "desenho",
+    "tabela_de_caixas": "desenho",
     "desenhar_zonas": "desenho",
     "criar_zonas": "case",
     "criar_rastreador": "case",
