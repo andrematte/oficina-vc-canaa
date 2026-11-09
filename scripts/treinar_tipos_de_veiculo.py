@@ -103,7 +103,7 @@ def render(opcoes):
     mp4 = opcoes.saida
     inicio = time.time()
     resultado = video.processar_video(
-        dados.caminho(case.VIDEO),
+        dados.baixar(opcoes.video),
         especialista,
         case.criar_rastreador(),
         case.criar_zonas(),
@@ -142,6 +142,8 @@ def main():
     r.add_argument("--dispositivo", default="cpu")
     r.add_argument("--pesos", type=Path, default=PESOS)
     r.add_argument("--saida", type=Path, default=MODELOS / "especialista_resultado.mp4")
+    r.add_argument("--video", default="bellevue-ne8th_1408_2335-2375s.mp4",
+                   help="vídeo da tabela de dados.py (padrão: o das 14h47, da etapa 9)")
     r.add_argument("--limite", type=int, help="só os primeiros N quadros (teste)")
     opcoes = p.parse_args()
     {"treinar": treinar, "render": render}[opcoes.etapa](opcoes)

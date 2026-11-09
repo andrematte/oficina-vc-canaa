@@ -23,6 +23,8 @@ ARQUIVOS = {
     "bellevue-ne8th_2762-2802s.mp4": Arquivo("1i9A0KF3kPFfU3DUpe5fWQ-30SKQ74Go1", 14_264_302, "vídeo"),
     "cena_ancora_bellevue_623.png": Arquivo("1v099NqG_Iab19DdfcZfzQoGZHPkdW6sD", 1_242_855, "Cena-âncora"),
     "yolo26n.pt": Arquivo("1Ben17d7u2o3t0kjPWCGfsJCH0YvN-OlR", 5_544_453, "modelo"),
+    # 40 s das 14h47 (hora das fotos de teste), para a etapa 9 do fine-tuning; adicionado em 09/11/2026
+    "bellevue-ne8th_1408_2335-2375s.mp4": Arquivo("1NjvfYfo1pR5Fw6VtSxHGmYYWMxTR1Lba", 17_146_660, "vídeo das 14h47"),
     # Gerados por scripts/gerar_resultado_pronto.py
     "case_resultado_pronto.mp4": Arquivo("12vMS44385rEu63b5DWo2w6C7lZtJkLuF", 5_571_043, "Resultado pronto (vídeo)"),
     "case_metricas.json": Arquivo("1h8Aa2T9UaoO-Eo1P2RNcYTX-UKDnSGSP", 11_775, "Resultado pronto (métricas)"),
@@ -44,6 +46,7 @@ CONJUNTOS = {
     ],
     "fine_tuning": [
         "bellevue-ne8th_2762-2802s.mp4",
+        "bellevue-ne8th_1408_2335-2375s.mp4",
         "yolo26n.pt",
         "dataset_tipos_de_veiculo.zip",
         "yolo26n_tipos_de_veiculo.pt",
