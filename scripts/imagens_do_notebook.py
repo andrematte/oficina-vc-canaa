@@ -5,6 +5,7 @@ teoria para dentro do notebook ("Conteúdo didático dentro dos notebooks"):
 
     mapa-do-case       tira com o quadro, as caixas, os Rastros e as Zonas da Cena-âncora
     pixel-rgb          o último quadro da animação 01b (o mesmo pixel, três números)
+    coco-lote          um lote de treino do COCO, com as caixas e o número de cada classe
     movimentos-norte   as três saídas de quem vem do Norte: reto, direita e esquerda
 
 As imagens vão embutidas no próprio `.ipynb` (JPEG em base64), para funcionar no
@@ -79,6 +80,25 @@ def pixel_rgb(animacoes):
         imagem = Image.open(saida).convert("RGB")
     w, h = imagem.size
     return imagem.crop((0, int(h * 0.12), w, int(h * 0.97))).resize((1200, int(1200 * h * 0.85 / w)), Image.LANCZOS)
+
+
+# Um lote de treino do COCO -----------------------------------------------------------
+# Página do COCO na documentação da Ultralytics (AGPL-3.0): docs.ultralytics.com/datasets/detect/coco
+URL_COCO = "https://cdn.ul.run/i/f9843f887d8186a8b43fdec6f570dcba.avif"
+
+
+def coco_lote():
+    """As duas primeiras fileiras do mosaico de treino do COCO: fotos, caixas e o número da classe."""
+    import urllib.request
+
+    with tempfile.TemporaryDirectory() as tmp:
+        avif, png = Path(tmp) / "coco.avif", Path(tmp) / "coco.png"
+        urllib.request.urlretrieve(URL_COCO, avif)
+        subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", str(avif), str(png)], check=True)
+        imagem = Image.open(png).convert("RGB")
+    w, h = imagem.size
+    alto = round(h * 0.48)  # as duas primeiras fileiras, sem as etiquetas que sobem da terceira
+    return imagem.crop((0, 0, w, alto)).resize((1200, round(1200 * alto / w)), Image.LANCZOS)
 
 
 # Movimentos de quem vem do Norte -------------------------------------------------
@@ -193,6 +213,7 @@ def main():
     imagens = {
         "mapa-do-case": mapa_do_case(a.instrutor / "deck" / "cena-ancora"),
         "pixel-rgb": pixel_rgb(a.instrutor / "animacoes"),
+        "coco-lote": coco_lote(),
         "movimentos-norte": movimentos_norte(a.dados),
     }
     if a.previa:

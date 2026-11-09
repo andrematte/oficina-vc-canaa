@@ -25,6 +25,7 @@ _ONDE = {
     "desenhar_caixas": "desenho",
     "tabela_de_caixas": "desenho",
     "desenhar_zonas": "desenho",
+    "resumo_do_modelo": "modelo",
     "criar_zonas": "case",
     "criar_rastreador": "case",
     "ContadorDeMovimentos": "movimentos",
