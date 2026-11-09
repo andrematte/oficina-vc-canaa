@@ -21,6 +21,7 @@ _ONDE = {
     "baixar": "dados",
     "mostrar": "desenho",
     "mostrar_video": "desenho",
+    "mostrar_recorte": "desenho",
     "desenhar_caixas": "desenho",
     "tabela_de_caixas": "desenho",
     "desenhar_zonas": "desenho",

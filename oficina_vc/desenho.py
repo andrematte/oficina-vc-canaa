@@ -180,6 +180,28 @@ def mostrar(imagem, largura=960):
     display(ImagemIPython(data=jpeg.tobytes(), format="jpeg", width=largura))
 
 
+def mostrar_recorte(quadro, recorte, linha, coluna, altura=360):
+    """Mostra o quadro com o retângulo do recorte e, ao lado, o recorte ampliado.
+
+    A ampliação repete cada pixel (sem suavizar): num recorte pequeno, os
+    quadradinhos de cor aparecem.
+    """
+    h, w = recorte.shape[:2]
+    if h == 0 or w == 0:
+        print("O recorte ficou vazio: diminua a linha ou a coluna.")
+        return
+    marcado = quadro.copy()
+    cv2.rectangle(marcado, (coluna, linha), (coluna + w - 1, linha + h - 1), estilo.hex_para_bgr(estilo.AMARELO), 4)
+    escala = altura / quadro.shape[0]
+    marcado = cv2.resize(marcado, (round(quadro.shape[1] * escala), altura), interpolation=cv2.INTER_AREA)
+    fator = altura / max(h, w)
+    ampliado = cv2.resize(recorte, (max(1, round(w * fator)), max(1, round(h * fator))), interpolation=cv2.INTER_NEAREST)
+    lado = np.full((altura, altura, 3), estilo.hex_para_bgr(estilo.OFF_WHITE), np.uint8)
+    lado[: ampliado.shape[0], : ampliado.shape[1]] = ampliado
+    vao = np.full((altura, 16, 3), estilo.hex_para_bgr(estilo.OFF_WHITE), np.uint8)
+    mostrar(np.hstack([marcado, vao, lado]), largura=960)
+
+
 def mostrar_video(video, largura=960):
     """Mostra um MP4 no notebook. Aceita um caminho ou um ResultadoCase."""
     from IPython.display import HTML, display
