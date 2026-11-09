@@ -60,14 +60,19 @@ def treinar(opcoes):
 
     from oficina_vc import case
 
-    yaml = _dataset(opcoes.zip)
     inicio = time.time()
-    modelo = YOLO(str(DRIVE / "oficina-vc-publico" / "yolo26n.pt"))
-    modelo.train(
-        data=str(yaml), epochs=opcoes.epocas, imgsz=case.IMGSZ, batch=opcoes.lote, device=opcoes.dispositivo,
-        project=str(TREINOS), name=opcoes.nome, exist_ok=True, seed=0, patience=opcoes.paciencia,
-        workers=0, plots=True, verbose=False, freeze=opcoes.congelar,
-    )
+    if opcoes.retomar:
+        # continua do last.pt, com os mesmos argumentos e o dataset já descompactado do treino interrompido
+        yaml = TREINOS / "dataset" / "tipos_de_veiculo" / "data.yaml"
+        YOLO(str(TREINOS / opcoes.nome / "weights" / "last.pt")).train(resume=True)
+    else:
+        yaml = _dataset(opcoes.zip)
+        modelo = YOLO(str(DRIVE / "oficina-vc-publico" / "yolo26n.pt"))
+        modelo.train(
+            data=str(yaml), epochs=opcoes.epocas, imgsz=case.IMGSZ, batch=opcoes.lote, device=opcoes.dispositivo,
+            project=str(TREINOS), name=opcoes.nome, exist_ok=True, seed=0, patience=opcoes.paciencia,
+            workers=0, plots=True, verbose=False, freeze=opcoes.congelar,
+        )
     minutos = (time.time() - inicio) / 60
     melhor = TREINOS / opcoes.nome / "weights" / "best.pt"
     pesos = opcoes.pesos
@@ -128,6 +133,8 @@ def main():
     t.add_argument("--congelar", type=int, default=11,
                    help="camadas congeladas (11 = o Corpo do YOLO26n, como no notebook e na animação; 0 = nenhuma)")
     t.add_argument("--nome", default="especialista", help="pasta do treino em ~/.cache/oficina-vc/treinos")
+    t.add_argument("--retomar", action="store_true",
+                   help="continua o treino interrompido de --nome a partir do last.pt (não descompacta o zip de novo)")
     r = sub.add_parser("render")
     r.add_argument("--dispositivo", default="cpu")
     r.add_argument("--pesos", type=Path, default=PESOS)
