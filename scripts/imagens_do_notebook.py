@@ -1,12 +1,16 @@
-"""Gera as imagens didáticas do `1_case_trafego.ipynb` e as embute no notebook.
+"""Gera as imagens didáticas dos dois notebooks e as embute neles.
 
 Na prática o projetor fica no Colab, sem slide de apoio; estas imagens trazem a
-teoria para dentro do notebook ("Conteúdo didático dentro dos notebooks"):
+teoria para dentro do notebook ("Conteúdo didático dentro dos notebooks"). No `1_case_trafego.ipynb`:
 
     mapa-do-case       tira com o quadro, as caixas, os Rastros e as Zonas (de oficina_vc/case.py)
     pixel-rgb          o último quadro da animação 01b (o mesmo pixel, três números)
     coco-lote          um lote de treino do COCO, com as caixas e o número de cada classe
     movimentos-norte   as três saídas de quem vem do Norte: reto, direita e esquerda
+
+e, no `2_fine_tuning_tipos_de_veiculo.ipynb`, o último quadro de quatro animações do deck:
+corpo-e-cabeca (05, passo 3), do-zero-x-fine-tuning (05, passo 4),
+divisao-do-dataset (02, passo 4) e epoca-e-erro (04c, passo 2).
 
 As imagens vão embutidas no próprio `.ipynb` (JPEG em base64), para funcionar no
 Colab e no Modo local sem internet. Cada uma entra num `<img alt="NOME" src="...">`
@@ -15,8 +19,7 @@ de uma célula de texto: o script troca o `src` pela imagem nova, sem mexer no r
 Uso (de dentro do repositório, com os arquivos da Oficina em `dados/`):
 
     python scripts/imagens_do_notebook.py \\
-        --instrutor ../drive/oficina-vc-instrutor \\
-        --notebook 1_case_trafego.ipynb
+        --instrutor ../drive/oficina-vc-instrutor  # os dois notebooks
 """
 
 import argparse
@@ -74,18 +77,24 @@ def mapa_do_case(cena, dados):
 
 
 # Imagem como números ---------------------------------------------------------
-def pixel_rgb(animacoes):
-    """Último quadro do passo 3 da animação 01b, sem a margem vazia de cima e de baixo."""
+def quadro_final(animacoes, nome, corte=(0.0, 1.0), largura=1200):
+    """Último quadro de uma animação do deck (MP4), com corte vertical (fração de cima, fração de baixo)."""
     with tempfile.TemporaryDirectory() as tmp:
         saida = Path(tmp) / "fim.png"
         subprocess.run(
             ["ffmpeg", "-loglevel", "error", "-y", "-sseof", "-0.1",
-             "-i", str(animacoes / "01b-imagem-colorida_passo03.mp4"), "-frames:v", "1", str(saida)],
+             "-i", str(animacoes / f"{nome}.mp4"), "-frames:v", "1", str(saida)],
             check=True,
         )
         imagem = Image.open(saida).convert("RGB")
     w, h = imagem.size
-    return imagem.crop((0, int(h * 0.12), w, int(h * 0.97))).resize((1200, int(1200 * h * 0.85 / w)), Image.LANCZOS)
+    imagem = imagem.crop((0, int(h * corte[0]), w, int(h * corte[1])))
+    return imagem.resize((largura, round(largura * imagem.height / w)), Image.LANCZOS)
+
+
+def pixel_rgb(animacoes):
+    """Último quadro do passo 3 da animação 01b, sem a margem vazia de cima e de baixo."""
+    return quadro_final(animacoes, "01b-imagem-colorida_passo03", (0.12, 0.97))
 
 
 # Um lote de treino do COCO -----------------------------------------------------------
@@ -206,29 +215,46 @@ def embutir(notebook, imagens):
     notebook.write_text(json.dumps(nb, ensure_ascii=False, indent=1) + "\n")
 
 
+def imagens_por_notebook(instrutor, dados):
+    """{notebook: {alt da imagem: função que gera a imagem}}."""
+    animacoes = instrutor / "animacoes"
+    return {
+        "1_case_trafego.ipynb": {
+            "mapa-do-case": lambda: mapa_do_case(instrutor / "deck" / "cena-ancora", dados),
+            "pixel-rgb": lambda: pixel_rgb(animacoes),
+            "coco-lote": coco_lote,
+            "movimentos-norte": lambda: movimentos_norte(dados),
+        },
+        "2_fine_tuning_tipos_de_veiculo.ipynb": {
+            # corpo congelado e classificador novo; do zero × fine-tuning; treino, validação e teste; epoch e loss
+            "corpo-e-cabeca": lambda: quadro_final(animacoes, "05-fine-tuning_passo03", (0.0, 0.93)),
+            "do-zero-x-fine-tuning": lambda: quadro_final(animacoes, "05-fine-tuning_passo04", (0.0, 0.93)),
+            "divisao-do-dataset": lambda: quadro_final(animacoes, "02-divisao-do-dataset_passo04", (0.0, 0.93)),
+            "epoca-e-erro": lambda: quadro_final(animacoes, "04c-epocas_passo02", (0.08, 0.97)),
+        },
+    }
+
+
 def main():
     raiz = Path(__file__).resolve().parents[1]
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--instrutor", type=Path, default=raiz.parent / "drive" / "oficina-vc-instrutor")
     p.add_argument("--dados", type=Path, default=raiz / "dados")
-    p.add_argument("--notebook", type=Path, default=raiz / "1_case_trafego.ipynb")
+    p.add_argument("--notebook", nargs="*", help="só estes notebooks (padrão: os dois)")
     p.add_argument("--previa", type=Path, help="pasta onde gravar as imagens em JPEG, para conferir")
     a = p.parse_args()
 
-    imagens = {
-        "mapa-do-case": mapa_do_case(a.instrutor / "deck" / "cena-ancora", a.dados),
-        "pixel-rgb": pixel_rgb(a.instrutor / "animacoes"),
-        "coco-lote": coco_lote(),
-        "movimentos-norte": movimentos_norte(a.dados),
-    }
-    if a.previa:
-        a.previa.mkdir(parents=True, exist_ok=True)
-        for nome, imagem in imagens.items():
-            imagem.save(a.previa / f"{nome}.jpg", quality=QUALIDADE)
-    uris = {nome: data_uri(imagem) for nome, imagem in imagens.items()}
-    embutir(a.notebook, uris)
-    for nome, uri in uris.items():
-        print(f"{nome}: {len(uri) * 3 // 4 // 1024} KB")
+    for notebook, geradores in imagens_por_notebook(a.instrutor, a.dados).items():
+        if a.notebook and notebook not in a.notebook:
+            continue
+        imagens = {nome: gerar() for nome, gerar in geradores.items()}
+        if a.previa:
+            a.previa.mkdir(parents=True, exist_ok=True)
+            for nome, imagem in imagens.items():
+                imagem.save(a.previa / f"{nome}.jpg", quality=QUALIDADE)
+        uris = {nome: data_uri(imagem) for nome, imagem in imagens.items()}
+        embutir(raiz / notebook, uris)
+        print(notebook + ": " + ", ".join(f"{nome} {len(uri) * 3 // 4 // 1024} KB" for nome, uri in uris.items()))
 
 
 if __name__ == "__main__":

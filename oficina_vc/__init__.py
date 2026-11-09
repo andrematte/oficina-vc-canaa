@@ -44,6 +44,9 @@ _ONDE = {
     "provar": "fine_tuning",
     "grade_de_teste": "fine_tuning",
     "que_veiculo_e_esse": "fine_tuning",
+    "seis_veiculos": "fine_tuning",
+    "foto_do_dataset": "fine_tuning",
+    "classes_do_dataset": "fine_tuning",
 }
 
 __all__ = sorted(_ONDE)

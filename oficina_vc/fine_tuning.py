@@ -1,4 +1,4 @@
-"""O Fine-tuning demonstrativo de Tipos de veículo: dataset, curvas, prova e o desafio "Que veículo é esse?".
+"""O Fine-tuning demonstrativo de Tipos de veículo: dataset, curvas, prova e os seis veículos do antes e depois.
 
 O treino em si (`modelo.train(..., freeze=11)`) fica à vista no notebook: é ele que
 ilustra a teoria. Aqui fica o que só atrapalharia a leitura: descompactar o dataset,
@@ -109,6 +109,20 @@ def _desenhar_gabarito(imagem, rotulos, nomes):
                      for _, cx, cy, l, a in rotulos])
     det = sv.Detections(xyxy=xyxy, class_id=np.array([c for c, *_ in rotulos]))
     return desenho.desenhar_caixas(imagem, det, nomes=nomes, rotulos=[nomes[c] for c, *_ in rotulos])
+
+
+def foto_do_dataset(yaml, divisao="treino", numero=0):
+    """(foto, arquivo de anotação, foto com as caixas desenhadas) de uma foto do dataset.
+
+    `divisao` é treino, validação ou teste (ou train, val, test); `numero` dá a volta
+    se passar do total da divisão.
+    """
+    pasta = {v: k for k, v in DIVISOES.items()}.get(divisao, divisao)
+    imagens = sorted((PASTA_DATASET / "images" / pasta).glob("*.jpg"))
+    foto = imagens[int(numero) % len(imagens)]
+    anotacao = Path(str(foto).replace("/images/", "/labels/")).with_suffix(".txt")
+    desenhada = _desenhar_gabarito(cv2.imread(str(foto)), _rotulos(foto), classes_do_dataset(yaml))
+    return foto, anotacao, desenhada
 
 
 def amostras(yaml, divisao="train", n=4, semente=3):
@@ -307,7 +321,7 @@ def _titulo(imagem, texto, altura=None):
     return np.vstack([cv2.cvtColor(np.asarray(faixa), cv2.COLOR_RGB2BGR), imagem])
 
 
-# Desafio "Que veículo é esse?" -------------------------------------------------------
+# Seis veículos (os recortes do antigo desafio "Que veículo é esse?") -------------------------------------------------------
 # (rótulo, quadro do trecho de 40 s, caixa no quadro 1280×720, resposta certa). A Cena-âncora
 # (quadro 623) não tem Pickup nem Caminhão: esses dois vêm de outros quadros dos mesmos 40 s.
 # O Ônibus (F) é opcional: o pré-treinado acerta, e isso deixa o placar honesto.
@@ -367,10 +381,11 @@ def _acertou(nome, certa):
     return estilo.nome_pt(nome) == certa or nome == certa
 
 
-def que_veiculo_e_esse(modelos):
-    """O desafio "Que veículo é esse?": os 6 recortes, a resposta de cada modelo e o placar.
+def seis_veiculos(modelos):
+    """Seis veículos dos 40 s do Case: os recortes, a resposta de cada modelo e os acertos.
 
     `modelos` é {nome: modelo YOLO}, ex.: {"Pré-treinado": modelo, "Especialista": especialista}.
+    São os recortes que eram do desafio "Que veículo é esse?".
     """
     quadros = quadros_do_video({n for _, n, _, _ in DESAFIO})
     placar = {nome: 0 for nome in modelos}
@@ -398,5 +413,8 @@ def que_veiculo_e_esse(modelos):
     print("  ".join("─" * w for w in larguras))
     for linha in linhas:
         print(formatar(linha))
-    print("\nPlacar: " + " × ".join(f"{nome} {pontos}/{len(DESAFIO)}" for nome, pontos in placar.items()))
+    print("\nAcertos: " + " × ".join(f"{nome} {pontos}/{len(DESAFIO)}" for nome, pontos in placar.items()))
     return placar
+
+
+que_veiculo_e_esse = seis_veiculos  # nome antigo, do desafio

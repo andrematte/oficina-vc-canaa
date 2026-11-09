@@ -1,4 +1,4 @@
-"""Resumo da arquitetura de um modelo YOLO, em português, para a etapa 2 do Case."""
+"""Resumo da arquitetura de um modelo YOLO, em português, para os notebooks do Case e do fine-tuning."""
 
 # O que cada tipo de bloco faz, em poucas palavras
 BLOCOS = {
@@ -17,11 +17,16 @@ def _milhar(n):
     return f"{n:,}".replace(",", ".")
 
 
-def resumo_do_modelo(modelo):
-    """Escreve os blocos do modelo, divididos em Corpo e Cabeça, com o número de pesos de cada um."""
+def resumo_do_modelo(modelo, congelar=None):
+    """Escreve os blocos do modelo, divididos em Corpo e Cabeça, com o número de pesos de cada um.
+
+    Com `congelar=11` (o `freeze` do treino), marca os blocos 0 a 10 como congelados e
+    soma os pesos que ficam parados e os que aprendem.
+    """
     blocos = modelo.model.model
     total = sum(p.numel() for p in modelo.model.parameters())
     print(f"{len(blocos)} blocos, {_milhar(total)} pesos ao todo\n")
+    parados = 0
     for i, bloco in enumerate(blocos):
         if i == 0:
             print("CORPO: transforma a imagem em mapas de características")
@@ -29,4 +34,12 @@ def resumo_do_modelo(modelo):
             print("\nCABEÇA: transforma os mapas em caixas e classes")
         tipo = type(bloco).__name__
         pesos = sum(p.numel() for p in bloco.parameters())
-        print(f"  {i:>2}  {tipo:<9}{_milhar(pesos):>10} pesos   {BLOCOS.get(tipo, '')}")
+        marca = ""
+        if congelar is not None:
+            congelado = i < congelar
+            parados += pesos if congelado else 0
+            marca = "🔒 " if congelado else "✏️ "
+        print(f"  {marca}{i:>2}  {tipo:<9}{_milhar(pesos):>10} pesos   {BLOCOS.get(tipo, '')}")
+    if congelar is not None:
+        print(f"\n🔒 congelados (não mudam): {_milhar(parados)} pesos ({parados / total:.0%})")
+        print(f"✏️ aprendem no treino:      {_milhar(total - parados)} pesos ({(total - parados) / total:.0%})")
